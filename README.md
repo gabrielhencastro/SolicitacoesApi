@@ -2,12 +2,12 @@
 
 Essa API é responsável por excluir usuários com segurança e gerar relatórios complexos.
 
-## 🚀 Tecnologias Utilizadas
+##  Tecnologias Utilizadas
 
 - Python / FAST API
 - Git & GitHub
 
-## 📋 Pré-requisitos
+##  Pré-requisitos
 
 A aplicação é feita para rodar no Render, então você não verá nada relacionado a servidor.
 Antes de começar, certifique-se de ter instalado em sua máquina:
