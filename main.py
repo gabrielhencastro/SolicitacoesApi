@@ -66,6 +66,7 @@ def gerar_relatorio(params: RelatorioParams, authorization: str = Header(...)):
                 df = pd.DataFrame(response.data)
                 caminho_excel = "temp/relatorio_solicitacoes.xlsx"
                 df.to_excel(caminho_excel, index=False)
+                return FileResponse(caminho_excel, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
             
 
         elif tipo_relatorio == 2:
