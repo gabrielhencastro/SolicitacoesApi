@@ -259,7 +259,15 @@ def deletar_usuario(authorization: str = Header(...)):
                 status_code=401, detail="Token sem o ID do usuário."
             )
 
-        admin_client.auth.admin.delete_user(user_id)
+        # Em vez de delete_user, você atualiza o usuário no Auth:
+        admin_client.auth.admin.update_user_by_id(
+            user_id,
+            {
+                "ban_duration": "876000h",  # Ban de 100 anos (impede login)
+                "email": f"deleted_{user_id}@deleted.com",  # Anonimiza o e-mail
+                "user_metadata": {},  # Limpa nome, foto, etc.
+            },
+        )
 
         return {
             "status": "success",
