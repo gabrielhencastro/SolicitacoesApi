@@ -9,7 +9,6 @@ Essa API é responsável por excluir usuários com segurança e gerar relatório
 
 ##  Pré-requisitos
 
-A aplicação é feita para rodar no Render, então você não verá nada relacionado a servidor.
 Antes de começar, certifique-se de ter instalado em sua máquina:
 
 - [Python 3.10+](https://www.python.org/)
@@ -29,3 +28,6 @@ $ npm install   # ou pip install -r requirements.txt
 
 # Execute a aplicação
 $ npm start     # ou python main.py
+
+# Inicie o servidor
+uvicorn main:app --host 0.0.0.0 --port 10000
