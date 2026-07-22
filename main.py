@@ -10,7 +10,6 @@ from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
-
 # Inicializa FastAPI
 app = FastAPI()
 
@@ -26,12 +25,13 @@ app.add_middleware(
 load_dotenv()
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SUPABASE_KEY = os.environ.get("SUPABASE_PUBLISHABLE_KEY")
+SUPABASE_SECRET_KEY = os.environ.get("SUPABASE_SECRET_KEY") 
+SUPABASE_JWKS_URL = os.environ.get("SUPABASE_JWKS_URL")
 
-if not SUPABASE_URL or not SUPABASE_KEY:
-    raise ValueError("As variáveis SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY precisam estar configuradas!")
+if not SUPABASE_URL or not SUPABASE_SECRET_KEY or not SUPABASE_JWKS_URL:
+    raise ValueError("Variáveis SUPABASE_URL, SUPABASE_SECRET_KEY e SUPABASE_JWKS_URL precisam estar configuradas!")
 
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+admin_client: Client = create_client(SUPABASE_URL, SUPABASE_SECRET_KEY)
 
 os.makedirs("temp", exist_ok=True)
 
@@ -56,7 +56,7 @@ def gerar_relatorio(params: RelatorioParams, authorization: str = Header(...)):
         status_solicitacao = params.status_solicitacao
 
         if tipo_relatorio == 1:
-            query = supabase.table('solicitacoes').select("*")
+            query = admin_client.table('solicitacoes').select("*")
             if tipo_solicitacao:
                 query = query.eq('tipo_solicitacao', tipo_solicitacao)
             if status_solicitacao:
@@ -72,7 +72,7 @@ def gerar_relatorio(params: RelatorioParams, authorization: str = Header(...)):
         elif tipo_relatorio == 2:
             # 1. Busca os dados no Supabase
             if not status_solicitacao or status_solicitacao == 'Em andamento':
-                query_andamento = supabase.table('solicitacoes').select("tipo_solicitacao").eq('status', 'Em andamento')
+                query_andamento = admin_client.table('solicitacoes').select("tipo_solicitacao").eq('status', 'Em andamento')
                 if tipo_solicitacao:
                     query_andamento = query_andamento.eq('tipo_solicitacao', tipo_solicitacao)
                 dados_em_andamento = query_andamento.execute()
@@ -81,7 +81,7 @@ def gerar_relatorio(params: RelatorioParams, authorization: str = Header(...)):
                 tipos_em_andamento = [[tipo, total] for tipo, total in contador_em_andamento.items()]
             
             if not status_solicitacao or status_solicitacao == 'Concluido':
-                query_concluido = supabase.table('solicitacoes').select("tipo_solicitacao").eq('status', 'Concluido')
+                query_concluido = admin_client.table('solicitacoes').select("tipo_solicitacao").eq('status', 'Concluido')
                 if tipo_solicitacao:
                     query_concluido = query_concluido.eq('tipo_solicitacao', tipo_solicitacao)
                 dados_concluido = query_concluido.execute()
@@ -238,14 +238,21 @@ def gerar_relatorio(params: RelatorioParams, authorization: str = Header(...)):
 @app.delete("/api/delete-user")
 def deletar_usuario(authorization: str = Header(...)):
     try:
-        token = authorization.replace("Bearer ", "")
-        user_response = supabase.auth.get_user(token)
+        token = authorization.replace("Bearer ", "").strip()
+        
+        # Validate JWT token
+        user_response = admin_client.auth.get_user(token)
+        
         if not user_response or not user_response.user:
             raise HTTPException(status_code=401, detail="Token inválido ou sessão expirada.")
 
         user_id = user_response.user.id
-        supabase.auth.admin.delete_user(user_id)
-        return {"status": "success", "message": f"Usuário {user_id} removido."}
+
+        admin_client.auth.admin.delete_user(user_id)
+
+        return {"status": "success", "message": f"Usuário {user_id} removido com sucesso."}
 
     except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
         raise HTTPException(status_code=400, detail=str(e))
