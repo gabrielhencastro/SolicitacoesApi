@@ -10,6 +10,9 @@ from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
+import base64
+import json
+
 # Inicializa FastAPI
 app = FastAPI()
 
@@ -238,21 +241,32 @@ def gerar_relatorio(params: RelatorioParams, authorization: str = Header(...)):
 @app.delete("/api/delete-user")
 def deletar_usuario(authorization: str = Header(...)):
     try:
+        # 1. Pega o token puro
         token = authorization.replace("Bearer ", "").strip()
-        
-        # Validate JWT token
-        user_response = admin_client.auth.get_user(token)
-        
-        if not user_response or not user_response.user:
-            raise HTTPException(status_code=401, detail="Token inválido ou sessão expirada.")
 
-        user_id = user_response.user.id
+        # 2. Decodifica o payload (parte do meio) na raça com Python puro
+        payload_b64 = token.split(".")[1]
+        # Corrige o padding do base64 nativo caso necessário
+        payload_b64 += "=" * (-len(payload_b64) % 4)
+        payload_json = base64.b64decode(payload_b64).decode("utf-8")
+        payload = json.loads(payload_json)
+
+        # 3. Pega o ID do usuário
+        user_id = payload.get("sub")
+
+        if not user_id:
+            raise HTTPException(
+                status_code=401, detail="Token sem o ID do usuário."
+            )
 
         admin_client.auth.admin.delete_user(user_id)
 
-        return {"status": "success", "message": f"Usuário {user_id} removido com sucesso."}
+        return {
+            "status": "success",
+            "message": f"Usuário {user_id} removido com sucesso.",
+        }
 
     except Exception as e:
-        if isinstance(e, HTTPException):
-            raise e
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(
+            status_code=400, detail=f"Erro ao processar: {str(e)}"
+        )
