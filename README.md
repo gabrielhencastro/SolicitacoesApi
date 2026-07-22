@@ -15,7 +15,7 @@ Antes de começar, certifique-se de ter instalado em sua máquina:
 - [Python 3.10+](https://www.python.org/)
 - [Git](https://git-scm.com/)
 
-## 🔧 Como Executar o Projeto
+##  Como Executar o Projeto
 
 ```bash
 # Clone este repositório
