@@ -10,8 +10,9 @@ from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
-import base64
-import json
+
+import jwt
+from jwt import PyJWKClient
 
 # Inicializa FastAPI
 app = FastAPI()
@@ -35,6 +36,7 @@ if not SUPABASE_URL or not SUPABASE_SECRET_KEY or not SUPABASE_JWKS_URL:
     raise ValueError("Variáveis SUPABASE_URL, SUPABASE_SECRET_KEY e SUPABASE_JWKS_URL precisam estar configuradas!")
 
 admin_client: Client = create_client(SUPABASE_URL, SUPABASE_SECRET_KEY)
+jwk_client = PyJWKClient(SUPABASE_JWKS_URL)
 
 os.makedirs("temp", exist_ok=True)
 
@@ -44,9 +46,43 @@ class RelatorioParams(BaseModel):
     tipo_solicitacao: str | None = None
     status_solicitacao: str | None = None
 
+def validar_jwt_supabase(user_jwt: str):
+    try:
+        # 1. Obtém a chave pública correta do JWKS usando o 'kid' do header do JWT
+        signing_key = jwk_client.get_signing_key_from_jwt(user_jwt)
+
+        # 2. Decodifica e valida a assinatura ES256, expiração (exp) e público (aud)
+        payload = jwt.decode(
+            user_jwt,
+            signing_key.key,
+            algorithms=["ES256"],
+            audience="authenticated"
+        )
+        return payload
+
+    except jwt.ExpiredSignatureError:
+        print("Erro: O token expirou.")
+    except jwt.InvalidTokenError as e:
+        print(f"Erro: JWT Inválido -> {e}")
+
 # ------------------- ROTA DE RELATÓRIO -------------------
 @app.post("/api/relatorio")
 def gerar_relatorio(params: RelatorioParams, authorization: str = Header(...)):
+    token = authorization.replace("Bearer ", "").strip()
+
+    claims = validar_jwt_supabase(token)
+    user_id = claims['sub']
+
+    acessos_permitidos = ['funcionario', 'master']
+
+    nivel_query = admin_client.table('profiles').select('nivel_acesso').eq('id', user_id).execute()
+    nivel = nivel_query.data[0]['nivel_acesso']
+
+    if nivel not in acessos_permitidos:
+        raise HTTPException(
+            status_code=403, detail="Usuário sem permissões."
+        )
+    
     # Inicialização
     qtd_em_andamento = 0
     qtd_concluido = 0
@@ -234,32 +270,36 @@ def gerar_relatorio(params: RelatorioParams, authorization: str = Header(...)):
             pdf.output(caminho_pdf)
             print(f"PDF Gerencial criado com sucesso em: {caminho_pdf}")
             return FileResponse("temp/relatorio_metricas.pdf", media_type="application/pdf")
+    except HTTPException:
+        raise 
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
+        raise HTTPException(
+            status_code=500, 
+            detail="Ocorreu um erro interno ao processar seu relatório. Tente novamente mais tarde."
+        )
 # ------------------- ROTA DE DELETE USER -------------------
 @app.delete("/api/delete-user")
 def deletar_usuario(authorization: str = Header(...)):
     try:
-        # 1. Pega o token puro
         token = authorization.replace("Bearer ", "").strip()
 
-        # 2. Decodifica o payload (parte do meio) na raça com Python puro
-        payload_b64 = token.split(".")[1]
-        # Corrige o padding do base64 nativo caso necessário
-        payload_b64 += "=" * (-len(payload_b64) % 4)
-        payload_json = base64.b64decode(payload_b64).decode("utf-8")
-        payload = json.loads(payload_json)
+        # pega informações do jwt
+        claims = validar_jwt_supabase(token)
 
-        # 3. Pega o ID do usuário
-        user_id = payload.get("sub")
+        # id do usuario
+        user_id = claims['sub']
 
         if not user_id:
             raise HTTPException(
                 status_code=401, detail="Token sem o ID do usuário."
             )
 
-        # Em vez de delete_user, você atualiza o usuário no Auth:
+        # desativa o usuario na tabela profiles
+        admin_client.table('profiles').update({
+            'ativo': False 
+        }).eq('id', user_id).execute()
+
+        #  atualiza o usuário no Auth:
         admin_client.auth.admin.update_user_by_id(
             user_id,
             {

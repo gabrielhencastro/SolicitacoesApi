@@ -5,29 +5,13 @@ Essa API é responsável por excluir usuários com segurança e gerar relatório
 ##  Tecnologias Utilizadas
 
 - Python / FAST API
+- Supabase / PyJWT
 - Git & GitHub
 
-##  Pré-requisitos
+##  Funcionalidades
 
-Antes de começar, certifique-se de ter instalado em sua máquina:
+- A API atua na exclusão de usuários de forma segura utilizando o JWT nativo do supabase,
+garatindo uma criptografia de ponta de linha e uma segurança robusta.
 
-- [Python 3.10+](https://www.python.org/)
-- [Git](https://git-scm.com/)
-
-##  Como Executar o Projeto
-
-```bash
-# Clone este repositório
-$ git clone [https://github.com/gabrielhencastro/SolicitacoesApi.git](https://github.com/gabrielhencastro/SolicitacoesApi.git)
-
-# Acesse a pasta do projeto
-$ cd seu-repositorio
-
-# Instale as dependências
-$ npm install   # ou pip install -r requirements.txt
-
-# Execute a aplicação
-$ npm start     # ou python main.py
-
-# Inicie o servidor
-uvicorn main:app --host 0.0.0.0 --port 10000
+- Além disso, processa e valida requisições para geração de relatórios complexos, com validação de
+segurança por usuário (usuários permitidos) e tratamento de erros
