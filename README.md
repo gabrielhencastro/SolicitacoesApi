@@ -1,6 +1,6 @@
 # API do projeto Solicitações
 
-Essa API é responsável por excluir usuários com segurança e gerar relatórios complexos.
+Essa API é responsável por inativar usuários com segurança e gerar relatórios complexos.
 
 ##  Tecnologias Utilizadas
 
@@ -10,7 +10,7 @@ Essa API é responsável por excluir usuários com segurança e gerar relatório
 
 ##  Funcionalidades
 
-- A API atua na exclusão de usuários de forma segura utilizando o JWT nativo do supabase,
+- A API atua na inativação de usuários de forma segura utilizando o JWT nativo do supabase,
 garatindo uma criptografia de ponta de linha e uma segurança robusta.
 
 - Além disso, processa e valida requisições para geração de relatórios complexos, com validação de

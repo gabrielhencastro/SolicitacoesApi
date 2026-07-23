@@ -277,8 +277,8 @@ def gerar_relatorio(params: RelatorioParams, authorization: str = Header(...)):
             status_code=500, 
             detail="Ocorreu um erro interno ao processar seu relatório. Tente novamente mais tarde."
         )
-# ------------------- ROTA DE DELETE USER -------------------
-@app.delete("/api/delete-user")
+# ------------------- ROTA DE DISABLE USER -------------------
+@app.delete("/api/disable-user")
 def deletar_usuario(authorization: str = Header(...)):
     try:
         token = authorization.replace("Bearer ", "").strip()
@@ -311,7 +311,7 @@ def deletar_usuario(authorization: str = Header(...)):
 
         return {
             "status": "success",
-            "message": f"Usuário {user_id} removido com sucesso.",
+            "message": f"Usuário {user_id} desativado com sucesso.",
         }
 
     except Exception as e:
