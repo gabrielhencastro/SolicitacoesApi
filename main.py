@@ -71,8 +71,19 @@ def gerar_relatorio(params: RelatorioParams, authorization: str = Header(...)):
     token = authorization.replace("Bearer ", "").strip()
 
     claims = validar_jwt_supabase(token)
-    user_id = claims['sub']
+    # id do usuario
+    try:
+        user_id = claims['sub']
+    except Exception:
+        raise HTTPException(
+            status_code=401, detail="Token inválido."
+        )
 
+    if not user_id:
+        raise HTTPException(
+            status_code=401, detail="Token sem o ID do usuário."
+        )
+        
     acessos_permitidos = ['funcionario', 'master']
 
     nivel_query = admin_client.table('profiles').select('nivel_acesso').eq('id', user_id).execute()
@@ -287,7 +298,12 @@ def deletar_usuario(authorization: str = Header(...)):
         claims = validar_jwt_supabase(token)
 
         # id do usuario
-        user_id = claims['sub']
+        try:
+            user_id = claims['sub']
+        except Exception:
+            raise HTTPException(
+                status_code=401, detail="Token inválido."
+            )
 
         if not user_id:
             raise HTTPException(
@@ -314,7 +330,10 @@ def deletar_usuario(authorization: str = Header(...)):
             "message": f"Usuário {user_id} desativado com sucesso.",
         }
 
+    except HTTPException:
+        raise
+
     except Exception as e:
         raise HTTPException(
-            status_code=400, detail=f"Erro ao processar: {str(e)}"
+            status_code=500, detail=f"Erro ao processar: {str(e)}"
         )
