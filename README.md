@@ -36,24 +36,34 @@ python-dotenv
 
 ### Executar Localmente
 1. Clone o repositório:
+```bash
    git clone https://github.com/seuusuario/solicitacoes_api.git
    cd solicitacoes_api
+```
 
 2. Crie e ative um ambiente virtual:
+```bash
    python -m venv venv
    source venv/bin/activate   # Linux/Mac
    venv\Scripts\activate      # Windows
+```
 
 3. Instale as dependências:
+```bash
    pip install -r requirements.txt
+```
 
 4. Configure as variáveis de ambiente:
-   - SUPABASE_URL
-   - SUPABASE_SECRET_KEY
-   - SUPABASE_JWKS_URL
+```env
+    SUPABASE_URL=...
+    SUPABASE_SECRET_KEY=...
+    SUPABASE_JWKS_URL=...
+```
 
 5. Rode a API:
-   uvicorn main:app --reload
+```bash
+   uvicorn main:app --host 0.0.0.0 --port 10000
+```
 
 A API estará disponível em: http://127.0.0.1:8000
 
