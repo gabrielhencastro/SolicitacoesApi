@@ -17,6 +17,7 @@ Essa API é responsável por **inativar usuários com segurança** e **gerar rel
 | Componente | Repositório / Status |
 | :--- | :--- |
 | **LANDING PAGE WEB** | [github.com/gabrielhencastro/SolicitacoesLandingPage](https://github.com/gabrielhencastro/SolicitacoesLandingPage) |
+| **LINK DA PÁGINA** | [gabrielhencastro.github.io/SolicitacoesLandingPage](https://gabrielhencastro.github.io/SolicitacoesLandingPage) |
 | **APLICATIVO MOBILE** | [github.com/gabrielhencastro/SolicitacoesApp](https://github.com/gabrielhencastro/SolicitacoesApp) | |
 ---
 
