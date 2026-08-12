@@ -12,6 +12,14 @@ Essa API é responsável por **inativar usuários com segurança** e **gerar rel
 
 ---
 
+##  Repositórios Relacionados
+
+| Componente | Repositório / Status |
+| :--- | :--- |
+| **LANDING PAGE WEB** | [github.com/gabrielhencastro/SolicitacoesLandingPage](https://github.com/gabrielhencastro/SolicitacoesLandingPage) |
+| **APLICATIVO MOBILE** | [github.com/gabrielhencastro/SolicitacoesApp](https://github.com/gabrielhencastro/SolicitacoesApp) | |
+---
+
 ##  Funcionalidades
 - Inativação de Usuários: Utiliza JWT nativo do Supabase para garantir criptografia robusta e segurança avançada.
 - Relatórios Complexos: Processa e valida requisições para geração de relatórios em PDF e Excel com o Pandas e FDPF, com controle de acesso por usuário e tratamento de erros.
